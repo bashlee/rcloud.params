@@ -1,3 +1,57 @@
+nullOrEmpty <- function(x) {
+  length(x) == 0
+}
+
+# Given a vector or list, drop all the NULL or length-0 items in it
+dropNullsOrEmpty <- function(x) {
+  x[!vapply(x, nullOrEmpty, FUN.VALUE=logical(1))]
+}
+
+getType <- function(`_tag_name`, varArgs){
+  if(`_tag_name` == "select")
+    "character"
+  else if(`_tag_name` == "input")
+    switch(varArgs$type,
+           'text' = "character",
+           'number' = "numeric",
+           'date' = "Date",
+           'range' = "numeric",
+           'checkbox' = "logical",
+           'character')
+}
+
+mytags <- list(
+  input = function(var, val = NA, ...) ptag("input", substitute(var), val, list(...)), ## generic input function
+  select = function(var, val = NA,...) ptag("select",  substitute(var), val, list(...))
+)
+
+#' ptag
+#'
+#' @export
+ptag <- function(`_tag_name`, var, value = NA, varArgs){
+
+  name <- deparse(var)
+
+  if(exists(name)) value <- eval(var)
+
+  varArgsNames <- names(varArgs)
+  if (is.null(varArgsNames))
+    varArgsNames <- character(length = length(varArgs))
+  named_idx <- nzchar(varArgsNames)
+  attribs <- dropNullsOrEmpty(varArgs[named_idx])
+  attribs$id <- paste0("rcloud-params-", name)
+  
+  children <- unname(varArgs[!named_idx])
+
+  inputTag <-toString(structure(list(name = `_tag_name`, attribs = attribs, children = children),
+                                class = "shiny.tag"))
+
+  varClass <- getType(`_tag_name`, varArgs)
+
+  param(inputTag, name, varClass = varClass, inputVal = value)
+}
+
+
 #' Create text input
 #'
 #' Creates HTML for a textbox input to pass to the param function
@@ -7,7 +61,8 @@ textInput <- function(var, value = NA){
   name <- deparse(substitute(var))
   if(exists(name)) value <- var
 
-  inputTag <- paste0("<input type= 'text' id='", paste0("rcloud-params-", name), "'></input>") 
+  #inputTag <- paste0("<input type= 'text' id='", paste0("rcloud-params-", name), "'></input>") 
+  inputTag <- toString(tags$input(type = 'text', id = paste0("rcloud-params-", name)))
   
   param(inputTag, name, varClass = "character", inputVal = value)
 }
@@ -21,8 +76,10 @@ numericInput <- function(var, value = NA, min = NA, max = NA, step = NA){
   name <- deparse(substitute(var))
   if(exists(name)) value <- var  # If variable defined value argument is over-ridden. 
   
-  inputTag <- paste0("<input type= 'number' id='", paste0("rcloud-params-", name),  
-                     "' min = '", min, "' max = '", max, "' step = '", step,"'></input>") 
+  # inputTag <- paste0("<input type= 'number' id='", paste0("rcloud-params-", name),  
+  #                    "' min = '", min, "' max = '", max, "' step = '", step,"'></input>") 
+  inputTag <- toString(tags$input(type = "number", id = paste0("rcloud-params-", name), 
+                         min = min, max = max, step = step))
   param(inputTag, name, varClass = "numeric", inputVal = value)
 }
 

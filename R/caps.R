@@ -3,6 +3,9 @@
   if (inherits(x, "javascript_function") || (is.character(x) && length(x) == 1)){ x }
   else {paste(as.character(x), collapse='\n')}
 } 
+
+#' rcw.append
+#' @export
 rcw.append <- function(element, what) {
   if (grepl("^rcloud-params-", what)) {
     input.caps$appendElement(element, what)
@@ -11,6 +14,9 @@ rcw.append <- function(element, what) {
   }
   
 }
+
+#' rcw.prepend
+#' @export
 rcw.prepend <- function(element, what) {
   if (grepl("^rcloud-params-", what)) {
     input.caps$prependElement(element, what)
@@ -19,6 +25,8 @@ rcw.prepend <- function(element, what) {
   }
 } 
 
+#' rcw.set
+#' @export
 rcw.set <- function(element, what) {
   if (grepl("^rcloud-params-", what)) {
     input.caps$setElement(element, what)
@@ -27,4 +35,26 @@ rcw.set <- function(element, what) {
   }
 } 
 
+#' rcw.on
+#' @export
+rcw.on <- function(element, events, callback, data=element, ...)
+  if (length(list(...))) {
+    l <- list(...)
+    if (!length(names(l)))
+      stop("callbacks must be named when passed via ...")
+    if (!missing(events) || !missing(callback))
+      stop("events/callback and using named events in ... are mutually exclusive")
+    for (n in names(l))
+      rcw.on(element, n, l[[n]], data)
+    invisible(names(l))
+  } else {
+    events <- paste(events, collapse=' ')
+    if (!inherits(callback, "OCref")) {
+      if (is.function(callback))
+        callback <- ocap(callback)
+      else
+        stop("callback must be a function or ocap")
+    }
+    input.caps$on(element, events, callback, data)
+  }
 
