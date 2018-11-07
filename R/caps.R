@@ -23,10 +23,13 @@ rcw.prepend <- function(element, what) {
 
 #' @export
 rcw.set <- function(element, what){
-  if(grepl("^rcloud-params-",what)){
-
-    input.caps$setElement(element, what)
+  if(grepl("^#param",element)){
+   input.caps$setDiv(element, .html.in(what))
   } else{
+  # if(grepl("^rcloud-params-",what)){
+  # 
+  #   input.caps$setElement(element, what)
+  # } else{
     input.caps$setDiv(element, .html.in(what))
   }
 } 

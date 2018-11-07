@@ -1,9 +1,9 @@
 # get oject type to assign class back to R
-getType <- function(param) {
-  if (param$input == "select") {
+getType <- function(`_tag_name`, varArgs) {
+  if (`_tag_name` == "select") {
     "character"
-  } else if (param$input == "input") {
-    switch(param$type,
+  } else if (`_tag_name` == "input") {
+    switch(varArgs$type,
            "text" = "character",
            "number" = "numeric",
            "date" = "Date",
@@ -46,7 +46,7 @@ param_set <- function(...){
     name <- i
     param <- fixInputType(param) 
     tag_out <- tag(param$input, param) 
-
+    
     #Set value
     if(is.null(tag_out$attribs$value)){
       tag_out$attribs$value <- ""
@@ -55,43 +55,55 @@ param_set <- function(...){
       value <- tag_out$attribs$value
     }
     
-
-
     if(exists(name)){
-      
       value <- get(name)
-      
-      if(is.function(value)){
-        stop(paste0("The variable name you have selected (", name,") is invalid, please choose another"))
-      }
- 
       tag_out$attribs$value <- value
     }
     
     tag_out$attribs$id <- paste0("rcloud-params-", name)
-
+    
     if(param$input == "select"){
-      
       tag_out$children <- list(lapply(param$choices, tags$option))
-      tag_out$attribs$choices <- NULL
-      tag_out$attribs$value <- NULL
-    }
-
-    if(param$type == "checkbox" && !is.na(value)){
-      if(value == TRUE){
-        tag_out$attribs$checked <- "checked"
-      }
     }
     
-    if(inherits(value, "Date")){
-      value <- as.character(value)
-    }
-
-    varClass <- getType(param)
+    varClass <- getType(param$input, param)
     label <- ifelse(is.null(param$label), name, param$label)
-
+    
     param(inputTag = as.character(tag_out), name = name,
           varClass = varClass, inputVal = value, label = label)
   }
+}
+
+
+#' param_add
+#'
+#' @export
+param_add <- function(var, varArgs){
+  
+tagName <- ifelse(varArgs$type == "select", "select", "input")
+  
+  tag_out <- tag(tagName, varArgs)
+  
+  name <- deparse(substitute(var))
+  
+  if(is.null(tag_out$attribs$value)){
+    tag_out$attribs$value <- ""
+    value = NA
+  } else{
+    value <- tag_out$attribs$value
+  }
+  
+  if(exists(name)){
+    value <- eval(var)
+    tag_out$attribs$value <- value
+  }
+  
+  tag_out$attribs$id <- paste0("rcloud-params-", name)
+  label <- ifelse(is.null(tag_out$attribs$label), name, tag_out$attribs$label)
+  varClass <- getType(tagName, varArgs)
+  
+  param(inputTag = as.character(tag_out), name = name, 
+        varClass = varClass, inputVal = value, label = label)  
+  
 }
 

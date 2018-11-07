@@ -41,7 +41,7 @@ Paramaterized widgets can be written inline with html tools objects, or wrapped 
 ```{r}
 div(
   h1("Params report"),
-  param_set(var = z, list(type = "numeric", label = "Assign value for z")) 
+  x = list(label = "Minimum",  min = 1, input = "numeric"),
   h2("End")
   )
 submit()
