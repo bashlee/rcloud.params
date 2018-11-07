@@ -3,9 +3,7 @@
 #' @param byRow alter widget display (T/F)
 #' @examples 
 #'    div(h1("Start"),h1("Start"),
-#'        mytags$input(v, val = 2, type = "number"),
-#'        mytags$input(z, type = "date"),
-#'        h1("End"))
+#'        x = list(label = "Minimum",  min = 1, input = "numeric"),       h1("End"))
 #'    submit()
 #' @export
 
